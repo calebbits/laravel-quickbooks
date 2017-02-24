@@ -38,41 +38,41 @@ class Quickbooks extends \QuickBooks_IPP_Service
     /**
      * Makes sure User is connected to QuickBooks. Needed for every method called to QuickBooks.
      */
-    public function __construct()
-    {
-        $this->config = config('quickbooks');
-
-        if (!\QuickBooks_Utilities::initialized($this->config['dsn'])) {
-            \QuickBooks_Utilities::initialize($this->config['dsn']);
-        }
-
-        $this->IntuitAnywhere = new \QuickBooks_IPP_IntuitAnywhere($this->config['dsn'], $this->config['encryption_key'], $this->config['oauth_consumer_key'], $this->config['oauth_consumer_secret'], $this->config['quickbooks_oauth_url'], $this->config['quickbooks_success_url']);
-
-            // Set up the IPP instance
-            $IPP = new \QuickBooks_IPP($this->config['dsn']);
-        if ($this->IntuitAnywhere->check($this->config['the_username'], $this->config['the_tenant']) and
-                $this->IntuitAnywhere->test($this->config['the_username'], $this->config['the_tenant'])) {
-            // Get our OAuth credentials from the database
-            $creds = $this->IntuitAnywhere->load($this->config['the_username'], $this->config['the_tenant']);
-
-            // Tell the framework to load some data from the OAuth store
-            $IPP->authMode(
-                \QuickBooks_IPP::AUTHMODE_OAUTH,
-                $this->config['the_username'],
-                $creds);
-
-            if ($this->config['sandbox']) {
-                // Turn on sandbox mode/URLs
-                    $IPP->sandbox(true);
-            }
-
-            // This is our current realm
-            $this->realm = $creds['qb_realm'];
-
-            // Load the OAuth information from the database
-            $this->context = $IPP->context();
-        }
-    }
+//    public function __construct()
+//    {
+//        $this->config = config('quickbooks');
+//
+//        if (!\QuickBooks_Utilities::initialized($this->config['dsn'])) {
+//            \QuickBooks_Utilities::initialize($this->config['dsn']);
+//        }
+//
+//        $this->IntuitAnywhere = new \QuickBooks_IPP_IntuitAnywhere($this->config['dsn'], $this->config['encryption_key'], $this->config['oauth_consumer_key'], $this->config['oauth_consumer_secret'], $this->config['quickbooks_oauth_url'], $this->config['quickbooks_success_url']);
+//
+//            // Set up the IPP instance
+//            $IPP = new \QuickBooks_IPP($this->config['dsn']);
+//        if ($this->IntuitAnywhere->check($this->config['the_username'], $this->config['the_tenant']) and
+//                $this->IntuitAnywhere->test($this->config['the_username'], $this->config['the_tenant'])) {
+//            // Get our OAuth credentials from the database
+//            $creds = $this->IntuitAnywhere->load($this->config['the_username'], $this->config['the_tenant']);
+//
+//            // Tell the framework to load some data from the OAuth store
+//            $IPP->authMode(
+//                \QuickBooks_IPP::AUTHMODE_OAUTH,
+//                $this->config['the_username'],
+//                $creds);
+//
+//            if ($this->config['sandbox']) {
+//                // Turn on sandbox mode/URLs
+//                    $IPP->sandbox(true);
+//            }
+//
+//            // This is our current realm
+//            $this->realm = $creds['qb_realm'];
+//
+//            // Load the OAuth information from the database
+//            $this->context = $IPP->context();
+//        }
+//    }
 
     /**
      * Handles Data from Accounting NameList Resources
@@ -413,26 +413,9 @@ class Quickbooks extends \QuickBooks_IPP_Service
             }
         }
 
-        if (isset($data['Line'])) {
-            foreach ($data['Line'] as $line) {
-                $Line = new \QuickBooks_IPP_Object_Line();
-                isset($line['Amount']) ? $Line->setAmount($line['Amount']) : '';
-                if (isset($line['LinkedTxn'])) {
-                    foreach ($line['LinkedTxn'] as $value) {
-                        $LinkedTxn = new \QuickBooks_IPP_Object_LinkedTxn();
-                        isset($value['TxnId']) ? $LinkedTxn->setTxnId($value['TxnId']) : '';
-                        isset($value['TxnType']) ? $LinkedTxn->setTxnType($value['TxnType']) : '';
-                        isset($value['TxnLineId']) ? $LinkedTxn->setTxnLineId($value['TxnLineId']) : '';
-                        $Line->setLinkedTxn($LinkedTxn);
-                    }
-                }
-                $obj->addLine($Line);
-            }
-        }
-
         if (isset($data['LinkedTxn'])) {
             foreach ($data['LinkedTxn'] as $key => $value) {
-                $LinkedTxn = new \QuickBooks_IPP_Object_LinkedTxn();
+                $LinkedTxn = new \Quickbooks_IPP_Object_LinkedTxn();
                 isset($value['TxnId']) ? $LinkedTxn->setTxnId($value['TxnId']) : '';
                 isset($value['TxnType']) ? $LinkedTxn->setTxnType($value['TxnType']) : '';
                 isset($value['TxnLineId']) ? $LinkedTxn->setTxnLineId($value['TxnLineId']) : '';
@@ -513,18 +496,16 @@ class Quickbooks extends \QuickBooks_IPP_Service
     protected function createLines($data, $obj)
     {
         if ($data) {
-            foreach ($data as $value) {
+            foreach ($data as $key => $value) {
                 $line = new \QuickBooks_IPP_Object_Line();
-                $type = $value['DetailType'];
-
                 isset($value['LineNumber']) ? $lnumber = $value['LineNumber'] - 1 : $lnumber = null;
 
-                if ($type != 'DescriptionOnly') {
-                    $accountType = '\\QuickBooks_IPP_Object_'.$type;
+                if ($key != 'DescriptionOnly') {
+                    $accountType = '\\QuickBooks_IPP_Object_'.$key;
                     $account = new $accountType();
                 }
 
-                switch ($type) {
+                switch ($key) {
                 case 'SalesItemLineDetail':
                     $this->handleSalesItemLineDetail($account, $value, $lnumber, $obj);
                     break;
