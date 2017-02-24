@@ -7,13 +7,19 @@
         "name": "Myles Hyson",
         "email": "me@myleshyson.com"
     }],
+     "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/calebbits/quickbooks-php"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/myleshyson/laravel-quickbooks.git"
+        }
+    ],
     "require": {
-        "consolibyte/quickbooks": "dev-master"
+        "consolibyte/quickbooks": "dev-custom"
     },
-    "repositories": [{
-        "type": "vcs",
-        "url": "https://github.com/myleshyson/laravel-quickbooks.git"
-    }],
     "autoload": {
         "psr-4": {
             "Myleshyson\\LaravelQuickBooks\\": "src/"
