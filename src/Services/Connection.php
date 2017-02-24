@@ -33,21 +33,19 @@ class Connection extends Quickbooks
                 $this->config['the_username'],
                 $creds);
 
-            if ($this->config['sandbox']) {
-                // Turn on sandbox mode/URLs
-                $IPP->sandbox(true);
-            }
 
             $qbObj = QB::where("organization_id",'=',$organization_id)->first();
+            $check_sandbox = ($qbObj->qb_company_id)?false:true;
+            $IPP->sandbox($check_sandbox);
+
             $credentials = $qbObj->getFillable();
             foreach($credentials as $field){
                 $qbObj[$field] = isset($creds[$field])?$creds[$field]:$qbObj[$field];
             }
+            $qbObj["qb_sandbox_company_id"] = $creds["qb_realm"];
             $qbObj->save();
-
             // This is our current realm
             $this->realm = $creds['qb_realm'];
-
             // Load the OAuth information from the database
             $this->context = $IPP->context();
         }
